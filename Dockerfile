@@ -10,5 +10,5 @@ RUN dotnet publish -c Release -o out BaGet.sln
 FROM microsoft/aspnetcore
 WORKDIR /app
 COPY --from=build-env /build/baget_/src/BaGet/out/ ./
-EXPOSE 80
+EXPOSE 3894
 ENTRYPOINT ["dotnet", "BaGet.dll"]
