@@ -53,6 +53,7 @@ namespace BaGet.Core.Services
             => _context.Packages
                 .Where(p => p.Id == id)
                 .Where(p => p.VersionString == version.ToNormalizedString())
+                .IncludeMultiple("Dependencies", "Dependencies.Dependencies")
                 .FirstOrDefaultAsync();
 
         public Task<bool> UnlistPackageAsync(string id, NuGetVersion version)
@@ -74,7 +75,21 @@ namespace BaGet.Core.Services
 
             if (package != null)
             {
-                Console.Write("Package found!");
+                Console.WriteLine($"Package found: {id} v{version.ToNormalizedString()}");
+
+                foreach (var dependencyGroup in package.Dependencies)
+                {
+                    Console.WriteLine($"Package Dependency Group: {dependencyGroup.Key}");
+
+                    foreach (var dependency in dependencyGroup.Dependencies)
+                    {
+                        Console.WriteLine($"Package Dependency: {dependency.Id}");
+
+                        _context.PackageDependencies.Remove(dependency);
+                    }
+
+                    _context.PackageDependencyGroups.Remove(dependencyGroup);
+                }
 
                 _context.Packages.Remove(package);
 
@@ -82,10 +97,10 @@ namespace BaGet.Core.Services
             }
             else
             {
-                Console.Write("Package not found!");
+                Console.WriteLine("Package not found!");
             }
 
-            Console.Write($"Result value: {result.ToString()}");
+            Console.WriteLine($"Result value: {result.ToString()}");
 
             return result;
         }

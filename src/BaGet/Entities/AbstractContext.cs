@@ -13,6 +13,10 @@ namespace BaGet.Entities
 
         public DbSet<Package> Packages { get; set; }
 
+        public DbSet<PackageDependency> PackageDependencies { get; set; }
+
+        public DbSet<PackageDependencyGroup> PackageDependencyGroups { get; set; }
+
         public Task<int> SaveChangesAsync() => SaveChangesAsync(default(CancellationToken));
 
         public abstract bool IsUniqueConstraintViolationException(DbUpdateException exception);
@@ -22,9 +26,11 @@ namespace BaGet.Entities
             BuildPackageEntity(builder);
 
             builder.Entity<PackageDependencyGroup>()
+                .ToTable("PackageDependencyGroup")
                 .HasKey(g => g.Key);
 
             builder.Entity<PackageDependency>()
+                .ToTable("PackageDependency")
                 .HasKey(d => d.Key);
         }
 
