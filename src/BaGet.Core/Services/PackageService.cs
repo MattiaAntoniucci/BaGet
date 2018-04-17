@@ -57,7 +57,8 @@ namespace BaGet.Core.Services
 
         public Task<bool> UnlistPackageAsync(string id, NuGetVersion version)
         {
-            return TryUpdatePackageAsync(id, version, p => p.Listed = false);
+            return RemovePackageAsync(id, version);
+            //return TryUpdatePackageAsync(id, version, p => p.Listed = false);
         }
 
         public Task<bool> RelistPackageAsync(string id, NuGetVersion version)
@@ -65,19 +66,44 @@ namespace BaGet.Core.Services
             return TryUpdatePackageAsync(id, version, p => p.Listed = true);
         }
 
+        private async Task<bool> RemovePackageAsync(string id, NuGetVersion version)
+        {
+            bool result = false;
+
+            var package = await FindAsync(id, version);
+
+            if (package != null)
+            {
+                Console.Write("Package found!");
+
+                _context.Packages.Remove(package);
+
+                result = await _context.SaveChangesAsync() > 0;
+            }
+            else
+            {
+                Console.Write("Package not found!");
+            }
+
+            Console.Write($"Result value: {result.ToString()}");
+
+            return result;
+        }
+
         private async Task<bool> TryUpdatePackageAsync(string id, NuGetVersion version, Action<Package> action)
         {
+            bool result = false;
+
             var package = await FindAsync(id, version);
 
             if (package != null)
             {
                 action(package);
-                await _context.SaveChangesAsync();
 
-                return true;
+                result = await _context.SaveChangesAsync() > 0;
             }
 
-            return false;
+            return result;
         }
 
         public async Task AddDownloadAsync(string id, NuGetVersion version)
