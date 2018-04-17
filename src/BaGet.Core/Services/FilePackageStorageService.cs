@@ -61,9 +61,24 @@ namespace BaGet.Core.Services
             return File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
-        public Task DeleteAsync(PackageIdentity package)
+        public async Task<bool> DeleteAsync(PackageIdentity package)
         {
-            throw new NotImplementedException();
+            bool result = false;
+
+            try
+            {
+                var packagePath = Path.Combine(_storePath, package.PackagePath());
+
+                await Task.Run(() => { File.Delete(packagePath); });
+
+                result = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
+            return result;
         }
 
         private void EnsurePathExists(PackageIdentity package)

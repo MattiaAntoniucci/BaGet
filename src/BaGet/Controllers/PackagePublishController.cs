@@ -4,6 +4,7 @@ using BaGet.Core.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace BaGet.Controllers
@@ -12,15 +13,18 @@ namespace BaGet.Controllers
     {
         private readonly IIndexingService _indexer;
         private readonly IPackageService _packages;
+        private readonly IPackageStorageService _storage;
         private readonly ILogger<PackagePublishController> _logger;
 
         public PackagePublishController(
             IIndexingService indexer,
             IPackageService packages,
+            IPackageStorageService storage,
             ILogger<PackagePublishController> logger)
         {
             _indexer = indexer ?? throw new ArgumentNullException(nameof(indexer));
             _packages = packages ?? throw new ArgumentNullException(nameof(packages));
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -72,7 +76,16 @@ namespace BaGet.Controllers
 
             if (await _packages.UnlistPackageAsync(id, nugetVersion))
             {
-                return NoContent();
+                var identity = new PackageIdentity(id, nugetVersion);
+
+                if (await _storage.DeleteAsync(identity))
+                {
+                    return NoContent();
+                }
+                else
+                {
+                    return StatusCode(500, "Error during delete the package from file system");
+                }
             }
             else
             {

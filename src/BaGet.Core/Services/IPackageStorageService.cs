@@ -14,6 +14,6 @@ namespace BaGet.Core.Services
         Task<Stream> GetNuspecStreamAsync(PackageIdentity package);
         Task<Stream> GetReadmeStreamAsync(PackageIdentity package);
 
-        Task DeleteAsync(PackageIdentity package);
+        Task<bool> DeleteAsync(PackageIdentity package);
     }
 }

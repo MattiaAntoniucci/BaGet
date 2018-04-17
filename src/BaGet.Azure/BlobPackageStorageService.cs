@@ -23,11 +23,26 @@ namespace BaGet.Azure
             _container = container ?? throw new ArgumentNullException(nameof(container));
         }
 
-        public async Task DeleteAsync(PackageIdentity package)
+        public async Task<bool> DeleteAsync(PackageIdentity package)
         {
-            await GetPackageBlob(package).DeleteIfExistsAsync();
-            await GetNuspecBlob(package).DeleteIfExistsAsync();
-            await GetReadmeBlob(package).DeleteIfExistsAsync();
+            bool result = false;
+
+            try
+            {
+                await GetPackageBlob(package).DeleteIfExistsAsync();
+                await GetNuspecBlob(package).DeleteIfExistsAsync();
+                await GetReadmeBlob(package).DeleteIfExistsAsync();
+
+                result = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+
+                throw;
+            }
+
+            return result;
         }
 
         public Task<Stream> GetPackageStreamAsync(PackageIdentity package)
