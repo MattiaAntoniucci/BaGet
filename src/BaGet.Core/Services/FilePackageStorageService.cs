@@ -67,9 +67,32 @@ namespace BaGet.Core.Services
 
             try
             {
-                var packagePath = Path.Combine(_storePath, package.PackagePath());
+                var packagePath = Path.Combine(_storePath, package.ReadmePath());
+                var nuspecPath = Path.Combine(_storePath, package.NuspecPath());
+                var readmePath = Path.Combine(_storePath, package.ReadmePath());
 
-                await Task.Run(() => { File.Delete(packagePath); });
+                Console.WriteLine($"Package path: {packagePath}");
+                Console.WriteLine($"Nuspec path: {nuspecPath}");
+                Console.WriteLine($"Readme path: {readmePath}");
+
+                await Task.Run(() =>
+                {
+                    DirectoryInfo di = new DirectoryInfo(packagePath);
+
+                    foreach (FileInfo file in di.GetFiles())
+                    {
+                        Console.WriteLine($"Delete file: {file.Name}");
+
+                        file.Delete();
+                    }
+
+                    foreach (DirectoryInfo dir in di.GetDirectories())
+                    {
+                        Console.WriteLine($"Delete folder: {dir.Name}");
+
+                        dir.Delete(true);
+                    }
+                });
 
                 result = true;
             }
